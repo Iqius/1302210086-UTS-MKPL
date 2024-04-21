@@ -12,10 +12,7 @@ public class Employee {
     private String idNumber;
     private String address;
 
-    private int yearJoined;
-    private int monthJoined;
-    private int dayJoined;
-    private int monthWorkingInYear;
+    private LocalDate dateJoined;
 
     private boolean isForeigner;
 
@@ -23,47 +20,37 @@ public class Employee {
     private int otherMonthlyIncome;
     private int annualDeductible;
 
-    private String spouseName;
-    private String spouseIdNumber;
+    private Spouse spouse;
+    private List<Child> children;
 
-    private List<String> childNames;
-    private List<String> childIdNumbers;
+    private Gender gender;
 
-    private Gender gender; // Menggunakan enum Gender
-    private MaritalStatus maritalStatus; // Menggunakan enum MaritalStatus
-
-    public Employee(String employeeId, String firstName, String lastName, String idNumber, String address, int yearJoined, int monthJoined, int dayJoined, boolean isForeigner, Gender gender) {
+    public Employee(String employeeId, String firstName, String lastName, String idNumber, String address, LocalDate dateJoined, boolean isForeigner, Gender gender) {
         this.employeeId = employeeId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.idNumber = idNumber;
         this.address = address;
-        this.yearJoined = yearJoined;
-        this.monthJoined = monthJoined;
-        this.dayJoined = dayJoined;
+        this.dateJoined = dateJoined;
         this.isForeigner = isForeigner;
         this.gender = gender;
 
-        childNames = new LinkedList<>();
-        childIdNumbers = new LinkedList<>();
+        children = new LinkedList<>();
     }
 
     public void setMonthlySalary(int grade) {
-        if (grade == 1) {
-            monthlySalary = 3000000;
-            if (isForeigner) {
-                monthlySalary = (int) (3000000 * 1.5);
-            }
-        } else if (grade == 2) {
-            monthlySalary = 5000000;
-            if (isForeigner) {
-                monthlySalary = (int) (3000000 * 1.5);
-            }
-        } else if (grade == 3) {
-            monthlySalary = 7000000;
-            if (isForeigner) {
-                monthlySalary = (int) (3000000 * 1.5);
-            }
+        switch (grade) {
+            case 1:
+                monthlySalary = isForeigner ? (int) (3000000 * 1.5) : 3000000;
+                break;
+            case 2:
+                monthlySalary = isForeigner ? (int) (5000000 * 1.5) : 5000000;
+                break;
+            case 3:
+                monthlySalary = isForeigner ? (int) (7000000 * 1.5) : 7000000;
+                break;
+            default:
+                break;
         }
     }
 
@@ -76,13 +63,11 @@ public class Employee {
     }
 
     public void setSpouse(String spouseName, String spouseIdNumber) {
-        this.spouseName = spouseName;
-        this.spouseIdNumber = idNumber;
+        this.spouse = new Spouse(spouseName, spouseIdNumber);
     }
 
     public void addChild(String childName, String childIdNumber) {
-        childNames.add(childName);
-        childIdNumbers.add(childIdNumber);
+        children.add(new Child(childName, childIdNumber));
     }
 
     public int getAnnualIncomeTax() {
@@ -95,15 +80,15 @@ public class Employee {
 
     private int calculateMonthsWorkedInYear() {
         LocalDate currentDate = LocalDate.now();
-        return (currentDate.getYear() == yearJoined) ? currentDate.getMonthValue() - monthJoined : 12;
+        return (currentDate.getYear() == dateJoined.getYear()) ? currentDate.getMonthValue() - dateJoined.getMonthValue() + 1 : 12;
     }
 
     private boolean isSingle() {
-        return (spouseIdNumber == null || spouseIdNumber.isEmpty());
+        return spouse == null;
     }
 
     private int numberOfChildren() {
-        return childIdNumbers.size();
+        return children.size();
     }
 
     // Enum untuk jenis kelamin
@@ -111,10 +96,5 @@ public class Employee {
         MALE,
         FEMALE
     }
-
-    // Enum untuk status pernikahan
-    public enum MaritalStatus {
-        SINGLE,
-        MARRIED
-    }
 }
+
